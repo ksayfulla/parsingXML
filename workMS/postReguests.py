@@ -1,13 +1,18 @@
 import requests
 import xml.etree.ElementTree as etree
 import json
+import HttpServer
 
+
+print('Введите метод :', end=' ')
 method = input()
+print('логин :', end=' ')
 login = input()
+print('пароль :', end=' ')
 password = input()
 
 
-def requestMs(meth):
+def requestMs(meth, hed, link):
     xml = (f'''<?xml version="1.0" encoding="utf-8"?>
     <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
       <soap:Body>
@@ -15,9 +20,9 @@ def requestMs(meth):
       </soap:Body>
     </soap:Envelope>''')
 
-    headers = {'Content-Type': 'text/xml', 'SOAPAction': "http://MetroService/Ping"}
+    headers = hed
     try:
-        resp = requests.post("http://metroservice.somee.com/WebService/MetroService.asmx?op=Ping", data=xml, headers=headers).text
+        resp = requests.post(link, data=xml, headers=headers).text
         with open('www.xml', 'w', encoding='utf-8') as f:
             f.write(resp)
 
@@ -34,18 +39,13 @@ def requestMs(meth):
 
 
 if method.lower() == 'ping':
-    meth = (f'''<Ping xmlns="http://MetroService/">
-      <login>{login}</login>
-      <password>{password}</password>
-    </Ping>''')
-    requestMs(meth)
+    meth, hed, link = HttpServer.PingParams(login, password)
+    requestMs(meth, hed, link)
 elif method.lower() == 'get':
-    meth = (f'''<GetDocuments xmlns="http://MetroService/">
-      <sekret_key>string</sekret_key>
-      <login>{login}</login>
-      <password>{password}</password>
-    </GetDocuments>''')
-    requestMs(meth)
+    print('sekret key :', end=' ')
+    sekretKey = input()
+    meth, hed, link = HttpServer.GetDcParams(sekretKey, login, password)
+    requestMs(meth, hed, link)
 else:
     print('Неверный ввод метода: используйте get или ping')
 
